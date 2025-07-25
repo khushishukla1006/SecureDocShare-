@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Test</title>
+    <script>
+        function testConnection() {
+            try {
+                // Test if we can create a WebSocket connection
+                const ws = new WebSocket('ws://127.0.0.1:8082');
+                ws.onopen = () => {
+                    document.getElementById('result').innerHTML = 'WebSocket connection successful!';
+                    document.getElementById('result').style.color = 'green';
+                };
+                ws.onerror = () => {
+                    document.getElementById('result').innerHTML = 'WebSocket connection failed';
+                    document.getElementById('result').style.color = 'red';
+                };
+                
+                // Test if we can make a fetch request
+                fetch('http://127.0.0.1:8082/test')
+                    .then(response => {
+                        document.getElementById('fetchResult').innerHTML = 'Fetch request successful!';
+                        document.getElementById('fetchResult').style.color = 'green';
+                    })
+                    .catch(error => {
+                        document.getElementById('fetchResult').innerHTML = 'Fetch request failed: ' + error;
+                        document.getElementById('fetchResult').style.color = 'red';
+                    });
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Browser Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <p id="result"></p>
+    <p id="fetchResult"></p>
+    
+    <h2>Browser Information</h2>
+    <p>Browser: <span id="browser"></span></p>
+    <p>Version: <span id="version"></span></p>
+    
+    <script>
+        document.getElementById('browser').textContent = navigator.userAgent;
+        document.getElementById('version').textContent = navigator.appVersion;
+    </script>
+</body>
+</html>

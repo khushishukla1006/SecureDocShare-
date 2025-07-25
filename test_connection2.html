@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test 2</title>
+    <script>
+        function testConnection() {
+            try {
+                // Try to make a fetch request
+                fetch('http://127.0.0.1:5003/api/test')
+                    .then(response => {
+                        document.getElementById('result').innerHTML = 'Connection successful!';
+                        document.getElementById('result').style.color = 'green';
+                    })
+                    .catch(error => {
+                        document.getElementById('result').innerHTML = 'Connection failed: ' + error;
+                        document.getElementById('result').style.color = 'red';
+                    });
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+
+        function testWebSocket() {
+            try {
+                const ws = new WebSocket('ws://127.0.0.1:5003');
+                ws.onopen = () => {
+                    document.getElementById('wsResult').innerHTML = 'WebSocket connection successful!';
+                    document.getElementById('wsResult').style.color = 'green';
+                };
+                ws.onerror = () => {
+                    document.getElementById('wsResult').innerHTML = 'WebSocket connection failed';
+                    document.getElementById('wsResult').style.color = 'red';
+                };
+            } catch (error) {
+                document.getElementById('wsResult').innerHTML = 'WebSocket error: ' + error;
+                document.getElementById('wsResult').style.color = 'red';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Connection Test</h1>
+    <button onclick="testConnection()">Test HTTP Connection</button>
+    <p id="result"></p>
+    
+    <button onclick="testWebSocket()">Test WebSocket Connection</button>
+    <p id="wsResult"></p>
+    
+    <h2>Browser Information</h2>
+    <p>Browser: <span id="browser"></span></p>
+    <p>Version: <span id="version"></span></p>
+    
+    <script>
+        document.getElementById('browser').textContent = navigator.userAgent;
+        document.getElementById('version').textContent = navigator.appVersion;
+    </script>
+</body>
+</html>

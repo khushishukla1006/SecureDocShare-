@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload Test</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>File Upload Test</h1>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div>
+                <label for="file">Select File:</label>
+                <input type="file" id="file" name="file" required>
+            </div>
+            <div>
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" placeholder="Enter title">
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const titleInput = document.getElementById('title');
+            
+            if (!fileInput.files[0]) {
+                showResult('Please select a file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('title', titleInput.value || fileInput.files[0].name);
+
+            try {
+                // Instead of making a network request, we'll just read the file
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    showResult(`File read successfully: ${file.name} (${Math.round(file.size / 1024)} KB)`, 'success');
+                };
+                
+                reader.onerror = (e) => {
+                    showResult('Error reading file', 'error');
+                };
+                
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                showResult(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+        }
+    </script>
+</body>
+</html>

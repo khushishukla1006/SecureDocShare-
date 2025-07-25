@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test 3</title>
+    <script>
+        function testConnection() {
+            try {
+                // Try to make a fetch request
+                fetch('http://127.0.0.1:5003/api/test')
+                    .then(response => {
+                        document.getElementById('result').innerHTML = 'HTTP Connection successful!';
+                        document.getElementById('result').style.color = 'green';
+                    })
+                    .catch(error => {
+                        document.getElementById('result').innerHTML = 'HTTP Connection failed: ' + error;
+                        document.getElementById('result').style.color = 'red';
+                    });
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+
+        function testFileUpload() {
+            const formData = new FormData();
+            formData.append('test', 'test value');
+
+            fetch('http://127.0.0.1:5003/api/test', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                document.getElementById('fileResult').innerHTML = 'File upload successful!';
+                document.getElementById('fileResult').style.color = 'green';
+            })
+            .catch(error => {
+                document.getElementById('fileResult').innerHTML = 'File upload failed: ' + error;
+                document.getElementById('fileResult').style.color = 'red';
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Connection Test</h1>
+    <button onclick="testConnection()">Test HTTP Connection</button>
+    <p id="result"></p>
+    
+    <button onclick="testFileUpload()">Test File Upload</button>
+    <p id="fileResult"></p>
+    
+    <h2>Browser Information</h2>
+    <p>Browser: <span id="browser"></span></p>
+    <p>Version: <span id="version"></span></p>
+    
+    <script>
+        document.getElementById('browser').textContent = navigator.userAgent;
+        document.getElementById('version').textContent = navigator.appVersion;
+    </script>
+</body>
+</html>

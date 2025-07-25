@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test</title>
+    <script>
+        function testConnection() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://127.0.0.1:5003/api/test', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    document.getElementById('result').innerHTML = 'Connection successful!';
+                    document.getElementById('result').style.color = 'green';
+                } else {
+                    document.getElementById('result').innerHTML = 'Connection failed';
+                    document.getElementById('result').style.color = 'red';
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+    <h1>Connection Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <p id="result"></p>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test 4</title>
+    <script>
+        function testConnection() {
+            try {
+                // Try to make a fetch request
+                fetch('http://127.0.0.1:5003/api/test', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('result').innerHTML = 'Connection successful!';
+                        document.getElementById('result').style.color = 'green';
+                    } else {
+                        document.getElementById('result').innerHTML = 'Server returned error: ' + response.status;
+                        document.getElementById('result').style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = 'Connection failed: ' + error;
+                    document.getElementById('result').style.color = 'red';
+                });
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+
+        function testRegistration() {
+            const email = 'test@example.com';
+            const password = 'password123';
+
+            fetch('http://127.0.0.1:5003/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('regResult').innerHTML = 'Registration successful!';
+                    document.getElementById('regResult').style.color = 'green';
+                } else {
+                    response.json().then(data => {
+                        document.getElementById('regResult').innerHTML = 'Registration failed: ' + (data.message || 'Unknown error');
+                        document.getElementById('regResult').style.color = 'red';
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById('regResult').innerHTML = 'Registration failed: ' + error;
+                document.getElementById('regResult').style.color = 'red';
+            });
+        }
+
+        function testLogin() {
+            const email = 'test@example.com';
+            const password = 'password123';
+
+            fetch('http://127.0.0.1:5003/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    response.json().then(data => {
+                        document.getElementById('loginResult').innerHTML = 'Login successful! Token: ' + data.access_token;
+                        document.getElementById('loginResult').style.color = 'green';
+                        // Store the token
+                        localStorage.setItem('accessToken', data.access_token);
+                        
+                        // Test file upload after login
+                        testFileUpload();
+                    });
+                } else {
+                    response.json().then(data => {
+                        document.getElementById('loginResult').innerHTML = 'Login failed: ' + (data.message || 'Unknown error');
+                        document.getElementById('loginResult').style.color = 'red';
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById('loginResult').innerHTML = 'Login failed: ' + error;
+                document.getElementById('loginResult').style.color = 'red';
+            });
+        }
+
+        function testFileUpload() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                document.getElementById('uploadResult').innerHTML = 'No token found. Please login first.';
+                document.getElementById('uploadResult').style.color = 'red';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', new Blob(['Test file content'], { type: 'text/plain' }));
+            formData.append('title', 'test-file.txt');
+
+            document.getElementById('uploadResult').innerHTML = 'Attempting file upload...';
+            document.getElementById('uploadResult').style.color = 'blue';
+
+            fetch('http://127.0.0.1:5003/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            })
+            .then(response => {
+                document.getElementById('uploadResult').innerHTML += '<br>Server response status: ' + response.status;
+                if (response.ok) {
+                    response.json().then(data => {
+                        document.getElementById('uploadResult').innerHTML += '<br>File upload successful! Document ID: ' + data.document_id;
+                        document.getElementById('uploadResult').style.color = 'green';
+                    });
+                } else {
+                    response.json().then(data => {
+                        document.getElementById('uploadResult').innerHTML += '<br>File upload failed: ' + (data.message || 'Unknown error');
+                        document.getElementById('uploadResult').style.color = 'red';
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById('uploadResult').innerHTML += '<br>Error: ' + error;
+                document.getElementById('uploadResult').style.color = 'red';
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Connection Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <p id="result"></p>
+    
+    <button onclick="testRegistration()">Test Registration</button>
+    <p id="regResult"></p>
+    
+    <button onclick="testLogin()">Test Login</button>
+    <p id="loginResult"></p>
+    
+    <p id="uploadResult"></p>
+    
+    <h2>Browser Information</h2>
+    <p>Browser: <span id="browser"></span></p>
+    <p>Version: <span id="version"></span></p>
+    
+    <script>
+        document.getElementById('browser').textContent = navigator.userAgent;
+        document.getElementById('version').textContent = navigator.appVersion;
+    </script>
+</body>
+</html>

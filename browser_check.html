@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Check</title>
+    <script>
+        function checkBrowser() {
+            // Check if we can create elements
+            const div = document.createElement('div');
+            if (div) {
+                document.getElementById('createElement').innerHTML = '✓';
+                document.getElementById('createElement').style.color = 'green';
+            }
+
+            // Check if we can read files
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('fileRead').innerHTML = '✓';
+                    document.getElementById('fileRead').style.color = 'green';
+                }
+            };
+            document.body.appendChild(fileInput);
+
+            // Check if we can make local storage work
+            try {
+                localStorage.setItem('test', 'value');
+                if (localStorage.getItem('test') === 'value') {
+                    document.getElementById('localStorage').innerHTML = '✓';
+                    document.getElementById('localStorage').style.color = 'green';
+                }
+            } catch (e) {
+                document.getElementById('localStorage').innerHTML = '✗';
+                document.getElementById('localStorage').style.color = 'red';
+            }
+
+            // Check if we can use IndexedDB
+            if (window.indexedDB) {
+                document.getElementById('indexedDB').innerHTML = '✓';
+                document.getElementById('indexedDB').style.color = 'green';
+            } else {
+                document.getElementById('indexedDB').innerHTML = '✗';
+                document.getElementById('indexedDB').style.color = 'red';
+            }
+
+            // Check if we can use WebRTC
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                document.getElementById('webrtc').innerHTML = '✓';
+                document.getElementById('webrtc').style.color = 'green';
+            } else {
+                document.getElementById('webrtc').innerHTML = '✗';
+                document.getElementById('webrtc').style.color = 'red';
+            }
+        }
+
+        function checkNetwork() {
+            // Check if we can access external resources
+            fetch('https://www.google.com')
+                .then(response => {
+                    document.getElementById('external').innerHTML = '✓';
+                    document.getElementById('external').style.color = 'green';
+                })
+                .catch(error => {
+                    document.getElementById('external').innerHTML = '✗';
+                    document.getElementById('external').style.color = 'red';
+                });
+
+            // Check if we can access localhost
+            fetch('http://localhost:8085')
+                .then(response => {
+                    document.getElementById('localhost').innerHTML = '✓';
+                    document.getElementById('localhost').style.color = 'green';
+                })
+                .catch(error => {
+                    document.getElementById('localhost').innerHTML = '✗';
+                    document.getElementById('localhost').style.color = 'red';
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Browser Check</h1>
+    <button onclick="checkBrowser()">Check Browser Features</button>
+    <button onclick="checkNetwork()">Check Network</button>
+
+    <h2>Basic Features</h2>
+    <ul>
+        <li>Create Element: <span id="createElement">?</span></li>
+        <li>Read File: <span id="fileRead">?</span></li>
+        <li>Local Storage: <span id="localStorage">?</span></li>
+        <li>IndexedDB: <span id="indexedDB">?</span></li>
+        <li>WebRTC: <span id="webrtc">?</span></li>
+    </ul>
+
+    <h2>Network</h2>
+    <ul>
+        <li>External Access: <span id="external">?</span></li>
+        <li>Localhost Access: <span id="localhost">?</span></li>
+    </ul>
+
+    <h2>Browser Information</h2>
+    <p>Browser: <span id="browser"></span></p>
+    <p>Version: <span id="version"></span></p>
+
+    <script>
+        document.getElementById('browser').textContent = navigator.userAgent;
+        document.getElementById('version').textContent = navigator.appVersion;
+    </script>
+</body>
+</html>
