@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Document Sharing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .upload-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .document-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .document-card:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-container" class="auth-container">
+        <h2 class="text-center mb-4">Secure Document Sharing</h2>
+        <div id="login-form">
+            <h3 class="mb-3">Login</h3>
+            <form onsubmit="return login()">
+                <div class="mb-3">
+                    <label for="loginEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label for="loginPassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="#" onclick="showRegisterForm()">Create an account</a>
+            </div>
+        </div>
+
+        <div id="register-form" style="display: none;">
+            <h3 class="mb-3">Register</h3>
+            <form onsubmit="return register()">
+                <div class="mb-3">
+                    <label for="registerEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="registerEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label for="registerPassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="#" onclick="showLoginForm()">Back to login</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard" style="display: none;" class="container">
+        <div class="upload-container">
+            <h2 class="mb-4">Upload Document</h2>
+            <form onsubmit="return uploadDocument()">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="file" class="form-label">File</label>
+                    <input type="file" class="form-control" id="file" accept=".pdf,.docx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="documents-container mt-4">
+            <h2>My Documents</h2>
+            <div id="documents-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token');
+        
+        if (token) {
+            showDashboard();
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    showDashboard();
+                } else {
+                    alert(data.message || 'Login failed');
+                }
+            } catch (error) {
+                alert('An error occurred during login');
+            }
+
+            return false;
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Registration successful! Please login.');
+                    showLoginForm();
+                } else {
+                    alert(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                alert('An error occurred during registration');
+            }
+
+            return false;
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadDocuments();
+        }
+
+        async function uploadDocument() {
+            const title = document.getElementById('title').value;
+            const file = document.getElementById('file').files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Document uploaded successfully!');
+                    loadDocuments();
+                } else {
+                    alert(data.message || 'Upload failed');
+                }
+            } catch (error) {
+                alert('An error occurred during upload');
+            }
+
+            return false;
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/api/documents', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                const documentsList = document.getElementById('documents-list');
+                documentsList.innerHTML = '';
+
+                data.documents.forEach(doc => {
+                    const card = document.createElement('div');
+                    card.className = 'document-card';
+                    card.innerHTML = `
+                        <h5>${doc.title}</h5>
+                        <p>High Priority Key: ${doc.high_priority_key}</p>
+                        <p>Low Priority Key: ${doc.low_priority_key}</p>
+                        <button class="btn btn-danger btn-sm" onclick="revokeAccess('${doc.id}')">Revoke Access</button>
+                    `;
+                    documentsList.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+
+        async function revokeAccess(documentId) {
+            if (!confirm('Are you sure you want to revoke access to this document?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/revoke/${documentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Access revoked successfully');
+                    loadDocuments();
+                } else {
+                    alert('Failed to revoke access');
+                }
+            } catch (error) {
+                alert('An error occurred while revoking access');
+            }
+        }
+    </script>
+</body>
+</html>
